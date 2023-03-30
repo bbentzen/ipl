@@ -4,28 +4,23 @@ Released under the Apache License 2.0 (see "License");
 Author: Bruno Bentzen
 -/
 
-variable σ : nat
-
 /- language definition -/
 
 inductive form : Type
-| atom : fin σ → form
+| atom : ℕ → form
 | bot : form
 | impl : form → form → form
 | and : form → form → form
 | or : form → form → form
 
 prefix `#` := form.atom
-notation `⊥` := form.bot _
+notation `⊥` := form.bot 
 infix `⊃` := form.impl
 notation p `&` q := form.and p q
 notation p `∨` q := form.or p q
-notation `~`:40 p := form.impl p (form.bot _)
+notation `~`:40 p := form.impl p (form.bot )
 
 /- context notation -/
-
-@[reducible]
-def ctx (σ : nat) : Type := set (form σ)
 
 notation `·` := {}
 notation Γ ` ⸴ ` p := set.insert p Γ
