@@ -8,11 +8,9 @@ import ..default
 
 open form
 
-variable {σ : nat}
-
 /- Hilbert-style axiomatization of intuitionistic propositional logic -/
 
-inductive prf : ctx σ → form σ → Prop
+inductive prf : set form → form → Prop
 | ax {Γ} {p} (h : p ∈ Γ) : prf Γ p
 | k {Γ} {p q} : prf Γ (p ⊃ (q ⊃ p))
 | s {Γ} {p q r} : prf Γ ((p ⊃ (q ⊃ r)) ⊃ ((p ⊃ q) ⊃ (p ⊃ r)))
@@ -32,11 +30,11 @@ notation Γ ` ⊬ᵢ ` p := prf Γ p → false
 
 namespace prf
 
-lemma id {p : form σ} {Γ : ctx σ} :
+lemma id {p : form } {Γ :  set form } :
   Γ ⊢ᵢ p ⊃ p :=
-mp (mp (@s σ Γ p (p ⊃ p) p) k) k
+mp (mp (@s  Γ p (p ⊃ p) p) k) k
 
-theorem deduction {Γ : ctx σ} {p q : form σ} :
+theorem deduction {Γ :  set form } {p q : form } :
   (Γ ⸴ p ⊢ᵢ q) → (Γ ⊢ᵢ p ⊃ q) :=
 begin
   generalize eq : (Γ ⸴ p) = Γ',
@@ -59,7 +57,7 @@ begin
   { exact mp k case }
 end
 
-theorem contradeduction {Γ : ctx σ} {p q : form σ} :
+theorem contradeduction {Γ :  set form } {p q : form } :
   (Γ ⊬ᵢ p ⊃ q) → (Γ ⸴ p ⊬ᵢ q) :=
 begin
   intros hn h,
@@ -68,7 +66,7 @@ end
 
 -- helpful for the compl proof
 
-lemma or_intro1 {p : form σ} {Γ : ctx σ} (q) :
+lemma or_intro1 {p : form } {Γ :  set form } (q) :
   (Γ ⊢ᵢ p) → (Γ ⊢ᵢ p ∨ q) :=
 begin
   intros hp,
@@ -77,7 +75,7 @@ begin
   { assumption }
 end
 
-lemma or_intro2 {q : form σ} {Γ : ctx σ} (p) :
+lemma or_intro2 {q : form } {Γ :  set form } (p) :
   (Γ ⊢ᵢ q) → (Γ ⊢ᵢ p ∨ q) :=
 begin
   intros hp,
@@ -86,7 +84,7 @@ begin
   { assumption }
 end
 
-lemma or_elim {p q r : form σ} {Γ : ctx σ} :
+lemma or_elim {p q r : form } {Γ :  set form } :
   (Γ ⊢ᵢ p ∨ q) → (Γ ⸴ p ⊢ᵢ r) → (Γ ⸴ q ⊢ᵢ r) → (Γ ⊢ᵢ r) :=
 begin
   intros hpq hp hq,
@@ -100,7 +98,7 @@ begin
   { assumption }
 end
 
-lemma and_elim1 {p q : form σ} {Γ : ctx σ} :
+lemma and_elim1 {p q : form } {Γ :  set form } :
   (Γ ⊢ᵢ (p & q)) → (Γ ⊢ᵢ p) :=
 begin
   intros hp,
@@ -109,7 +107,7 @@ begin
   { assumption }
 end
 
-lemma and_elim2 {p q : form σ} {Γ : ctx σ} :
+lemma and_elim2 {p q : form } {Γ :  set form } :
   (Γ ⊢ᵢ (p & q)) → (Γ ⊢ᵢ q) :=
 begin
   intros hp,
@@ -120,7 +118,7 @@ end
 
 /- structural rules -/
 
-lemma sub_weak {Γ Δ : ctx σ} {p : form σ} :
+lemma sub_weak {Γ Δ :  set form } {p : form } :
   (Δ ⊢ᵢ p) → (Δ ⊆ Γ) → (Γ ⊢ᵢ p) :=
 begin
   intros hp h,

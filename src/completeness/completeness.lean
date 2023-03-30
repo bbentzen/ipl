@@ -10,55 +10,53 @@ open nat set classical
 
 local attribute [instance, priority 0] prop_decidable
 
-variables {σ : nat}
-
 /- maximal set of a context -/
 
-namespace ctx
+namespace  ctx
 
-def is_closed (Γ : ctx σ) := 
-∀ {p : form σ}, (Γ ⊢ᵢ p) → p ∈ Γ
+def is_closed (Γ :  set form) := 
+∀ {p : form}, (Γ ⊢ᵢ p) → p ∈ Γ
 
-def has_disj (Γ : ctx σ) := 
-∀ {p q : form σ}, ((p ∨ q) ∈ Γ) → ((p ∈ Γ) ∨ (q ∈ Γ))
+def has_disj (Γ :  set form) := 
+∀ {p q : form}, ((p ∨ q) ∈ Γ) → ((p ∈ Γ) ∨ (q ∈ Γ))
 
-def is_max (Γ : ctx σ) := 
+def is_max (Γ :  set form) := 
 is_closed Γ ∧ has_disj Γ
 
 /-- extension -/
 
-def insert_form (Γ : ctx σ) (p q r : form σ) : ctx σ :=
+def insert_form (Γ :  set form) (p q r : form) :  set form :=
 if (Γ ⸴ p ⊢ᵢ r) then Γ ⸴ q else Γ ⸴ p
 
 @[simp]
-def insert_code (Γ : ctx σ) (r : form σ) (n : nat) : ctx σ :=
-match encodable.decode (form σ) n with
+def insert_code (Γ :  set form) (r : form) (n : nat) :  set form :=
+match encodable.decode (form) n with
 | none := Γ
 | some (p ∨ q) := if Γ ⊢ᵢ p ∨ q then insert_form Γ p q r else Γ
 | some _ := Γ
 end
 
 @[simp]
-def insertn (Γ : ctx σ) (r : form σ) : nat → ctx σ
+def insertn (Γ :  set form) (r : form) : nat →  set form
 | 0     := Γ 
 | (n+1) := insert_code (insertn n) r n 
 
 @[simp]
-def maxn (Γ : ctx σ) (r : form σ) : nat → ctx σ
+def maxn (Γ :  set form) (r : form) : nat →  set form
 | 0     := Γ
 | (n+1) := ⋃ i, insertn (maxn n) r i 
 
 @[simp]
-def max (Γ : ctx σ) (r : form σ) : ctx σ := 
+def max (Γ :  set form) (r : form) :  set form := 
 ⋃ n, maxn Γ r n
 
 /- max extends the original set -/
 
-lemma subset_insert_code {Γ : ctx σ} {r : form σ} (n) :
+lemma subset_insert_code {Γ :  set form} {r : form} (n) :
   Γ ⊆ insert_code Γ r n :=
 begin
   intros v hv, simp, 
-  cases (encodable.decode (form σ) _),
+  cases (encodable.decode (form) _),
     { assumption },
     { induction val,
       repeat { assumption },
@@ -70,16 +68,16 @@ begin
         repeat { right, assumption } } }
 end
 
-lemma maxn_subset_max {Γ : ctx σ} {r : form σ} (n) :
+lemma maxn_subset_max {Γ :  set form} {r : form} (n) :
   maxn Γ r n ⊆ max Γ r :=
 subset_Union _ _
 
-lemma subset_insertn {Γ : ctx σ} {r : form σ} {n} :
+lemma subset_insertn {Γ :  set form} {r : form} {n} :
   Γ ⊆ insertn Γ r n :=
 begin
   induction n,
   { simp }, 
-  { simp, cases (encodable.decode (form σ) _) with p,
+  { simp, cases (encodable.decode (form) _) with p,
     { assumption },
       induction p,
         repeat {assumption},
@@ -91,15 +89,15 @@ begin
             repeat {intros q hq, right, exact n_ih hq} } } }
 end
 
-lemma subset_max_self {Γ : ctx σ} {r : form σ} :
+lemma subset_max_self {Γ :  set form} {r : form} :
   Γ ⊆ max Γ r :=
 maxn_subset_max 0
 
-lemma insertn_sub_maxn {Γ : ctx σ} {r : form σ} {n m : nat} :
+lemma insertn_sub_maxn {Γ :  set form} {r : form} {n m : nat} :
   insertn (maxn Γ r n) r m ⊆ maxn Γ r (n+1) :=
 subset_Union _ _
 
-lemma insertn_to_max {Γ : ctx σ} {r : form σ} {n m : nat} :
+lemma insertn_to_max {Γ :  set form} {r : form} {n m : nat} :
   insertn (maxn Γ r n) r m ⊆ max Γ r :=
 by induction m; 
 [ apply maxn_subset_max, 
@@ -107,15 +105,15 @@ by induction m;
 
 /- max has the disjunction property -/
 
-lemma in_max_in_maxn {Γ : ctx σ} {p r : form σ} :
+lemma in_max_in_maxn {Γ :  set form} {p r : form} :
   (p ∈ max Γ r ) → ∃ n, p ∈ maxn Γ r n :=
 mem_Union.1
 
-lemma in_maxn_in_insertn {Γ : ctx σ} {p r : form σ} {n} :
+lemma in_maxn_in_insertn {Γ :  set form} {p r : form} {n} :
   (p ∈ maxn Γ r (n+1) ) → ∃ i, p ∈ insertn (maxn Γ r n) r i :=
 mem_Union.1
 
-lemma maxn_subset_succ {Γ : ctx σ} {r : form σ} {n : nat} :
+lemma maxn_subset_succ {Γ :  set form} {r : form} {n : nat} :
   maxn Γ r n ⊆ maxn Γ r (n+1) :=
 begin
   apply subset.trans,
@@ -124,15 +122,15 @@ begin
   { exact subset_Union _ _}
 end
 
-lemma maxn_mono {Γ : ctx σ} {r : form σ} {m n : nat} (h : n ≤ m) :
+lemma maxn_mono {Γ :  set form} {r : form} {m n : nat} (h : n ≤ m) :
   maxn Γ r n ⊆ maxn Γ r m :=
 by induction h; [refl, exact subset.trans h_ih maxn_subset_succ ]
 
-lemma insertn_mono {Γ : ctx σ} {r : form σ} {m n : nat} (h : n ≤ m) :
+lemma insertn_mono {Γ :  set form} {r : form} {m n : nat} (h : n ≤ m) :
   insertn Γ r n ⊆ insertn Γ r m :=
 by induction h; [refl, exact subset.trans h_ih (subset_insert_code _)]
 
-def maxn_sub_prf {Γ : ctx σ} {p r : form σ} : 
+def maxn_sub_prf {Γ :  set form} {p r : form} : 
   (max Γ r ⊢ᵢ p) → ∃ n, maxn Γ r n ⊢ᵢ p :=
 begin
   generalize eq : max Γ r = Γ',
@@ -173,7 +171,7 @@ begin
           assumption } } }
 end
 
-lemma prf_maxn_prf_insertn {Γ : ctx σ} {p r : form σ} {n} :
+lemma prf_maxn_prf_insertn {Γ :  set form} {p r : form} {n} :
   (maxn Γ r (n+1) ⊢ᵢ p) → ∃ i, insertn (maxn Γ r n) r i ⊢ᵢ p :=
 begin
   generalize eq : maxn Γ r (n+1) = Γ',
@@ -213,7 +211,7 @@ begin
           { assumption } } } }
 end
 
-def max_insertn_disj {Γ : ctx σ} {p q r : form σ} (h : (p ∨ q) ∈ max Γ r) : 
+def max_insertn_disj {Γ :  set form} {p q r : form} (h : (p ∨ q) ∈ max Γ r) : 
   ∃ n, p ∈ (insertn (maxn Γ r n) r (encodable.encode (p ∨ q)+1)) ∨ 
        q ∈ (insertn (maxn Γ r n) r (encodable.encode (p ∨ q)+1)) :=
 begin
@@ -231,7 +229,7 @@ begin
         { right,left, refl } } }
 end
 
-def max_has_disj {Γ : ctx σ} {p q r : form σ} : 
+def max_has_disj {Γ :  set form} {p q r : form} : 
   ((p ∨ q) ∈ max Γ r) → p ∈ max Γ r ∨ q ∈ max Γ r :=
 begin
   intro h, cases max_insertn_disj h with n hpq, cases hpq,
@@ -241,7 +239,7 @@ end
 
 /- max is closed -/
 
-lemma max_prf_disj_self {Γ : ctx σ} {p r : form σ} : 
+lemma max_prf_disj_self {Γ :  set form} {p r : form} : 
   (max Γ r ⊢ᵢ r ∨ p) → ∃ n, p ∈ (insertn (maxn Γ r n) r (encodable.encode (r ∨ p)+1)) :=
 begin
   intros h,
@@ -261,19 +259,19 @@ begin
       { left, refl } }
 end
 
-def max_is_closed {Γ : ctx σ} {p q r : form σ} : 
+def max_is_closed {Γ :  set form} {p q r : form} : 
   (max Γ r ⊢ᵢ p) → p ∈ max Γ r :=
 by { intros h, cases max_prf_disj_self (prf.or_intro2 r h), apply insertn_to_max, repeat {assumption} }
 
 /- max preserves consistency -/
 
-lemma insertn_prf {Γ : ctx σ} {p : form σ} {i} : 
+lemma insertn_prf {Γ :  set form} {p : form} {i} : 
   (insertn Γ p i ⊢ᵢ p) → (Γ ⊢ᵢ p) :=
 begin
   induction i,
   { simp }, 
   { simp [insertn, insert_code],
-    cases (encodable.decode (form σ) _) with p,
+    cases (encodable.decode (form) _) with p,
     { assumption },
     { induction p,
         repeat {assumption},
@@ -290,7 +288,7 @@ end
 
 -- these two are better (positive)
 
-def maxn_not_prfn {Γ : ctx σ} {p : form σ} {n} : 
+def maxn_not_prfn {Γ :  set form} {p : form} {n} : 
   (maxn Γ p n ⊢ᵢ p) → (Γ ⊢ᵢ p) :=
 begin
   induction n with k ih,
@@ -302,7 +300,7 @@ begin
     apply ih, apply insertn_prf h_1
 end
 
-def max_not_prf {Γ : ctx σ} {p : form σ} : 
+def max_not_prf {Γ :  set form} {p : form} : 
   (max Γ p ⊢ᵢ p) → (Γ ⊢ᵢ p) :=
 begin
   intros hm,
@@ -312,18 +310,18 @@ end
 
 -- Closure under derivability
 
-end ctx
+end  ctx
 
-lemma max_of_max {Γ : ctx σ} {r : form σ} : 
-ctx.is_max (ctx.max Γ r) :=
+lemma max_of_max {Γ :  set form} {r : form} : 
+ ctx.is_max (ctx.max Γ r) :=
 begin
   split,
     intro, apply ctx.max_is_closed, assumption,
     intros p q, apply ctx.max_has_disj
 end
 
-lemma max_no_prf {Γ : ctx σ} {r : form σ} (h : Γ ⊬ᵢ r) : 
-ctx.max Γ r ⊬ᵢ r :=
+lemma max_no_prf {Γ :  set form} {r : form} (h : Γ ⊬ᵢ r) : 
+ ctx.max Γ r ⊬ᵢ r :=
 λ hm, h (ctx.max_not_prf hm)
 
 /- the canonical model construction -/
@@ -332,31 +330,31 @@ ctx.max Γ r ⊬ᵢ r :=
 
 namespace canonical
 
-def is_consist (Γ : ctx σ) := Γ ⊬ᵢ ⊥
+def is_consist (Γ :  set form) := Γ ⊬ᵢ ⊥
 
-def domain (σ : nat) : set (wrld σ) := {w | is_consist w ∧ ctx.is_max w}
+def domain : set (wrld) := {w | is_consist w ∧  ctx.is_max w}
 
 -- accessibility
 
-def access : wrld σ → wrld σ → Prop :=
+def access : wrld → wrld → Prop :=
 λ w v, w ⊆ v
 
 -- valuation
 
-def val : fin σ → wrld σ → Prop :=
-λ q w, w ∈ domain σ ∧ (#q) ∈ w
+def val : ℕ → wrld → Prop :=
+λ q w, w ∈ domain ∧ (#q) ∈ w
 
 -- reflexivity
 
 lemma access.refl :
-  ∀ w ∈ domain σ, access w w :=
+  ∀ w ∈ domain, access w w :=
 begin
   intros, unfold access
 end
 
 -- transitivity
 
-lemma access.trans : ∀ w ∈ domain σ, ∀ v ∈ domain σ, ∀ u ∈ domain σ,
+lemma access.trans : ∀ w ∈ domain, ∀ v ∈ domain, ∀ u ∈ domain,
   access w v → access v u → access w u :=
 begin
   unfold access,
@@ -364,10 +362,10 @@ begin
   apply hvu, apply hwv, assumption
 end
 
-def model : @model σ :=
+def model : @model :=
 begin
   fapply model.mk,
-    apply domain σ,
+    apply domain,
     apply access,
     apply val,
     apply access.refl,
@@ -376,14 +374,14 @@ end
 
 /- simple lemmas -/
 
-lemma consist_of_not_prf {Γ : ctx σ} {p : form σ} : 
+lemma consist_of_not_prf {Γ :  set form} {p : form} : 
   (Γ ⊬ᵢ p) → is_consist Γ :=
 λ nhp nc, nhp (prf.mp prf.exf nc)
 
 /- truth is membership in the canonical model -/
 
-lemma model_tt_iff_prf {p : form σ} : 
-  ∀ (w ∈ domain σ), (w ⊩⦃model⦄ p) ↔ (w ⊢ᵢ p) :=
+lemma model_tt_iff_prf {p : form} : 
+  ∀ (w ∈ domain), (w ⊩⦃model⦄ p) ↔ (w ⊢ᵢ p) :=
 begin
   induction p with p p q hp hq p q hp hq p q hp hq,
   -- atom 
@@ -403,7 +401,7 @@ begin
   { intro Hw,
     cases (em _),
     { assumption },
-    { have hd : ctx.max (w ⸴ p) q ∈ domain σ :=
+    { have hd : ctx.max (w ⸴ p) q ∈ domain :=
         begin
           split,
           exact consist_of_not_prf (max_no_prf (prf.contradeduction h)),
@@ -411,7 +409,7 @@ begin
         end,
       apply false.elim,
       apply max_no_prf (prf.contradeduction h),
-      cases hq (ctx.max (w ⸴ p) q) _,
+      cases hq ( ctx.max (w ⸴ p) q) _,
       apply mp,
       apply Hw _ hd,
       { exact H },
@@ -460,18 +458,18 @@ begin
         apply prf.ax, assumption } } },
 end
 
-lemma ctx_tt_of_prf {Γ : ctx σ} (wm : Γ ∈ domain σ) : 
+lemma ctx_tt_of_prf {Γ :  set form} (wm : Γ ∈ domain) : 
   (Γ ⊩⦃model⦄ Γ) :=
 by { intros p hp, apply (model_tt_iff_prf Γ wm).2, apply prf.ax, assumption }
 
 /- the completeness theorem -/
 
-theorem completeness {Γ : ctx σ} {p : form σ} : 
+theorem completeness {Γ :  set form} {p : form} : 
   (Γ ⊨ᵢ p) → (Γ ⊢ᵢ p) :=
 begin
   apply (@not_imp_not (Γ ⊢ᵢ p) (Γ ⊨ᵢ p) (prop_decidable _)).1,
   intros nhp hp,
-  have hd: ctx.max Γ p ∈ domain σ :=
+  have hd: ctx.max Γ p ∈ domain :=
     begin
       split,
       apply consist_of_not_prf,
