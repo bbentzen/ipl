@@ -1,7 +1,17 @@
+/-
+Copyright (c) 2023 Bruno Bentzen. All rights reserved.
+Released under the Apache License 2.0 (see "License");
+Author: Bruno Bentzen, Dongheng Chen, Huayu Guo
+-/
+
 -- lem is invalid
+
 import .semantics
+
 open form
+
 namespace no_lem
+
 def W : set (wrld) := {{atom 0}, {atom 1}}
 
 def R : wrld → wrld → Prop :=  --- w0 sees w1 
