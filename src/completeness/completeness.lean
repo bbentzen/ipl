@@ -59,7 +59,7 @@ begin
   cases (encodable.decode (form) _),
     { assumption },
     { induction val,
-      repeat { assumption },
+      assumption',
       unfold insert_code ite,
       induction (prop_decidable _),
       { assumption },
@@ -80,7 +80,7 @@ begin
   { simp, cases (encodable.decode (form) _) with p,
     { assumption },
       induction p,
-        repeat {assumption},
+        assumption',
       { simp [ite], 
         induction (prop_decidable _),
         { simp, assumption },
@@ -118,7 +118,7 @@ lemma maxn_subset_succ {Γ :  set form} {r : form} {n : nat} :
 begin
   apply subset.trans,
   { apply subset_insertn,
-    repeat {assumption} },
+    assumption' },
   { exact subset_Union _ _}
 end
 
@@ -261,7 +261,7 @@ end
 
 def max_is_closed {Γ :  set form} {p q r : form} : 
   (max Γ r ⊢ᵢ p) → p ∈ max Γ r :=
-by { intros h, cases max_prf_disj_self (prf.or_intro2 r h), apply insertn_to_max, repeat {assumption} }
+by { intros h, cases max_prf_disj_self (prf.or_intro2 r h), apply insertn_to_max, assumption' }
 
 /- max preserves consistency -/
 
@@ -274,7 +274,7 @@ begin
     cases (encodable.decode (form) _) with p,
     { assumption },
     { induction p,
-        repeat {assumption},
+        assumption',
         { simp [ite], 
           induction (prop_decidable _),
             { assumption },
@@ -283,7 +283,7 @@ begin
               { intro, contradiction },
               { intro, apply i_ih, 
                 apply prf.or_elim,
-                repeat {assumption } } } } } }
+                assumption' } } } } }
 end
 
 -- these two are better (positive)
@@ -366,11 +366,11 @@ lemma access.mono :
 ∀ p, ∀ w1 w2 ∈ domain, 
 val p w1 → access w1 w2 →  val p w2 :=
 begin
-intros p w1 w2 hw1 hw2 vp1 w12,
-split,
-assumption,
-apply w12,
-exact vp1.2
+  intros p w1 w2 hw1 hw2 vp1 w12,
+  split,
+  { assumption },
+  { apply w12,
+    exact vp1.2 }
 end
 
 def model : @model :=
