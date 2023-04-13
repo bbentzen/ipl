@@ -362,6 +362,17 @@ begin
   apply hvu, apply hwv, assumption
 end
 
+lemma access.mono :
+∀ p, ∀ w1 w2 ∈ domain, 
+val p w1 → access w1 w2 →  val p w2 :=
+begin
+intros p w1 w2 hw1 hw2 vp1 w12,
+split,
+assumption,
+apply w12,
+exact vp1.2
+end
+
 def model : @model :=
 begin
   fapply model.mk,
@@ -369,7 +380,8 @@ begin
     apply access,
     apply val,
     apply access.refl,
-    apply access.trans
+    apply access.trans,
+    apply access.mono
 end
 
 /- simple lemmas -/
@@ -381,7 +393,7 @@ lemma consist_of_not_prf {Γ :  set form} {p : form} :
 /- truth is membership in the canonical model -/
 
 lemma model_tt_iff_prf {p : form} : 
-  ∀ (w ∈ domain), (w ⊩⦃model⦄ p) ↔ (w ⊢ᵢ p) :=
+  ∀ (w ∈ domain), (w ⊩{model} p) ↔ (w ⊢ᵢ p) :=
 begin
   induction p with p p q hp hq p q hp hq p q hp hq,
   -- atom 
@@ -459,7 +471,7 @@ begin
 end
 
 lemma ctx_tt_of_prf {Γ :  set form} (wm : Γ ∈ domain) : 
-  (Γ ⊩⦃model⦄ Γ) :=
+  (Γ ⊩{model} Γ) :=
 by { intros p hp, apply (model_tt_iff_prf Γ wm).2, apply prf.ax, assumption }
 
 /- the completeness theorem -/
