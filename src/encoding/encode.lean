@@ -42,7 +42,7 @@ private def finv : Wfin arity → form
 
 instance [encodable ℕ] : encodable form :=
 begin
-  haveI : encodable (constructors σ) :=
+  haveI : encodable constructors :=
     by { unfold constructors, apply_instance },
   exact encodable.of_left_inverse f finv (by { intro p, induction p; simp [f, finv, *] })
 end
