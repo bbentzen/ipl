@@ -37,6 +37,22 @@ end
 def val : nat → wrld → Prop :=
 λ _ w, w = {atom 1}
 
+def atom0_ne_atom1 : #0 ≠ #1 :=
+λ h, (@form.no_confusion false #0 #1 h) zero_ne_one
+
+lemma mono : ∀ p, ∀ w1 w2 ∈ W, val p w1 → R w1 w2 →  val p w2:=
+begin
+intros p w1 w2 iw1 iw2 val1 r12,
+cases r12,
+rw r12.symm,
+assumption,
+apply false.elim,
+apply atom0_ne_atom1,
+apply set.singleton_eq_singleton_iff.1,
+rw r12.symm,
+assumption,
+end
+
 def M : model :=
 begin
   fapply model.mk,
@@ -45,6 +61,7 @@ begin
   exact val,
   exact Rrefl,
   exact Rtrans,
+  exact mono,
 end
 
 lemma M_lem : 
