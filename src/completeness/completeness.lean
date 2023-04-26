@@ -10,7 +10,7 @@ open nat set classical
 
 local attribute [instance, priority 0] prop_decidable
 
-/- maximal set of a context -/
+/- prime extension of context set -/
 
 namespace  ctx
 
@@ -20,7 +20,7 @@ def is_closed (Γ :  set form) :=
 def has_disj (Γ :  set form) := 
 ∀ {p q : form}, ((p ∨ q) ∈ Γ) → ((p ∈ Γ) ∨ (q ∈ Γ))
 
-def is_max (Γ :  set form) := 
+def is_prime (Γ :  set form) := 
 is_closed Γ ∧ has_disj Γ
 
 /-- extension -/
@@ -42,15 +42,15 @@ def insertn (Γ :  set form) (r : form) : nat →  set form
 | (n+1) := insert_code (insertn n) r n 
 
 @[simp]
-def maxn (Γ :  set form) (r : form) : nat →  set form
+def primen (Γ :  set form) (r : form) : nat →  set form
 | 0     := Γ
-| (n+1) := ⋃ i, insertn (maxn n) r i 
+| (n+1) := ⋃ i, insertn (primen n) r i 
 
 @[simp]
-def max (Γ :  set form) (r : form) :  set form := 
-⋃ n, maxn Γ r n
+def prime (Γ :  set form) (r : form) :  set form := 
+⋃ n, primen Γ r n
 
-/- max extends the original set -/
+/- prime extends the original set -/
 
 lemma subset_insert_code {Γ :  set form} {r : form} (n) :
   Γ ⊆ insert_code Γ r n :=
@@ -68,8 +68,8 @@ begin
         repeat { right, assumption } } }
 end
 
-lemma maxn_subset_max {Γ :  set form} {r : form} (n) :
-  maxn Γ r n ⊆ max Γ r :=
+lemma primen_subset_prime {Γ :  set form} {r : form} (n) :
+  primen Γ r n ⊆ prime Γ r :=
 subset_Union _ _
 
 lemma subset_insertn {Γ :  set form} {r : form} {n} :
@@ -89,32 +89,32 @@ begin
             repeat {intros q hq, right, exact n_ih hq} } } }
 end
 
-lemma subset_max_self {Γ :  set form} {r : form} :
-  Γ ⊆ max Γ r :=
-maxn_subset_max 0
+lemma subset_prime_self {Γ :  set form} {r : form} :
+  Γ ⊆ prime Γ r :=
+primen_subset_prime 0
 
-lemma insertn_sub_maxn {Γ :  set form} {r : form} {n m : nat} :
-  insertn (maxn Γ r n) r m ⊆ maxn Γ r (n+1) :=
+lemma insertn_sub_primen {Γ :  set form} {r : form} {n m : nat} :
+  insertn (primen Γ r n) r m ⊆ primen Γ r (n+1) :=
 subset_Union _ _
 
-lemma insertn_to_max {Γ :  set form} {r : form} {n m : nat} :
-  insertn (maxn Γ r n) r m ⊆ max Γ r :=
+lemma insertn_to_prime {Γ :  set form} {r : form} {n m : nat} :
+  insertn (primen Γ r n) r m ⊆ prime Γ r :=
 by induction m; 
-[ apply maxn_subset_max, 
-  exact subset.trans insertn_sub_maxn (maxn_subset_max _) ]
+[ apply primen_subset_prime, 
+  exact subset.trans insertn_sub_primen (primen_subset_prime _) ]
 
-/- max has the disjunction property -/
+/- prime has the disjunction property -/
 
-lemma in_max_in_maxn {Γ :  set form} {p r : form} :
-  (p ∈ max Γ r ) → ∃ n, p ∈ maxn Γ r n :=
+lemma in_prime_in_primen {Γ :  set form} {p r : form} :
+  (p ∈ prime Γ r ) → ∃ n, p ∈ primen Γ r n :=
 mem_Union.1
 
-lemma in_maxn_in_insertn {Γ :  set form} {p r : form} {n} :
-  (p ∈ maxn Γ r (n+1) ) → ∃ i, p ∈ insertn (maxn Γ r n) r i :=
+lemma in_primen_in_insertn {Γ :  set form} {p r : form} {n} :
+  (p ∈ primen Γ r (n+1) ) → ∃ i, p ∈ insertn (primen Γ r n) r i :=
 mem_Union.1
 
-lemma maxn_subset_succ {Γ :  set form} {r : form} {n : nat} :
-  maxn Γ r n ⊆ maxn Γ r (n+1) :=
+lemma primen_subset_succ {Γ :  set form} {r : form} {n : nat} :
+  primen Γ r n ⊆ primen Γ r (n+1) :=
 begin
   apply subset.trans,
   { apply subset_insertn,
@@ -122,20 +122,20 @@ begin
   { exact subset_Union _ _}
 end
 
-lemma maxn_mono {Γ :  set form} {r : form} {m n : nat} (h : n ≤ m) :
-  maxn Γ r n ⊆ maxn Γ r m :=
-by induction h; [refl, exact subset.trans h_ih maxn_subset_succ ]
+lemma primen_mono {Γ :  set form} {r : form} {m n : nat} (h : n ≤ m) :
+  primen Γ r n ⊆ primen Γ r m :=
+by induction h; [refl, exact subset.trans h_ih primen_subset_succ ]
 
 lemma insertn_mono {Γ :  set form} {r : form} {m n : nat} (h : n ≤ m) :
   insertn Γ r n ⊆ insertn Γ r m :=
 by induction h; [refl, exact subset.trans h_ih (subset_insert_code _)]
 
-def maxn_sub_prf {Γ :  set form} {p r : form} : 
-  (max Γ r ⊢ᵢ p) → ∃ n, maxn Γ r n ⊢ᵢ p :=
+def primen_sub_prf {Γ :  set form} {p r : form} : 
+  (prime Γ r ⊢ᵢ p) → ∃ n, primen Γ r n ⊢ᵢ p :=
 begin
-  generalize eq : max Γ r = Γ',
+  generalize eq : prime Γ r = Γ',
   intro h, induction h; subst eq,
-  { cases in_max_in_maxn h_h with n hpq,
+  { cases in_prime_in_primen h_h with n hpq,
     exact ⟨n, prf.ax hpq⟩ }, 
 
   repeat {
@@ -160,23 +160,23 @@ begin
         { assumption },
         { apply prf.sub_weak,
           { exact h_ext_p },
-          { apply maxn_mono,
+          { apply primen_mono,
             assumption } } } },
     { constructor,
       { apply prf.mp,
         { apply prf.sub_weak,
           { exact h_ext_pq },
-          { apply maxn_mono,
+          { apply primen_mono,
             assumption } },
           assumption } } }
 end
 
-lemma prf_maxn_prf_insertn {Γ :  set form} {p r : form} {n} :
-  (maxn Γ r (n+1) ⊢ᵢ p) → ∃ i, insertn (maxn Γ r n) r i ⊢ᵢ p :=
+lemma prf_primen_prf_insertn {Γ :  set form} {p r : form} {n} :
+  (primen Γ r (n+1) ⊢ᵢ p) → ∃ i, insertn (primen Γ r n) r i ⊢ᵢ p :=
 begin
-  generalize eq : maxn Γ r (n+1) = Γ',
+  generalize eq : primen Γ r (n+1) = Γ',
   intro h, induction h; subst eq,
-  { cases in_maxn_in_insertn h_h with n hpq,
+  { cases in_primen_in_insertn h_h with n hpq,
     exact ⟨n, prf.ax hpq⟩ },
 
     repeat {
@@ -211,11 +211,11 @@ begin
           { assumption } } } }
 end
 
-def max_insertn_disj {Γ :  set form} {p q r : form} (h : (p ∨ q) ∈ max Γ r) : 
-  ∃ n, p ∈ (insertn (maxn Γ r n) r (encodable.encode (p ∨ q)+1)) ∨ 
-       q ∈ (insertn (maxn Γ r n) r (encodable.encode (p ∨ q)+1)) :=
+def prime_insertn_disj {Γ :  set form} {p q r : form} (h : (p ∨ q) ∈ prime Γ r) : 
+  ∃ n, p ∈ (insertn (primen Γ r n) r (encodable.encode (p ∨ q)+1)) ∨ 
+       q ∈ (insertn (primen Γ r n) r (encodable.encode (p ∨ q)+1)) :=
 begin
-  cases in_max_in_maxn h with n hpq,
+  cases in_prime_in_primen h with n hpq,
   fapply exists.intro,
   { exact n },
   { unfold insertn insert_code,
@@ -229,21 +229,21 @@ begin
         { right,left, refl } } }
 end
 
-def max_has_disj {Γ :  set form} {p q r : form} : 
-  ((p ∨ q) ∈ max Γ r) → p ∈ max Γ r ∨ q ∈ max Γ r :=
+def prime_has_disj {Γ :  set form} {p q r : form} : 
+  ((p ∨ q) ∈ prime Γ r) → p ∈ prime Γ r ∨ q ∈ prime Γ r :=
 begin
-  intro h, cases max_insertn_disj h with n hpq, cases hpq,
-  { left, apply insertn_to_max hpq },
-  { right, apply insertn_to_max hpq }
+  intro h, cases prime_insertn_disj h with n hpq, cases hpq,
+  { left, apply insertn_to_prime hpq },
+  { right, apply insertn_to_prime hpq }
 end
 
-/- max is closed -/
+/- prime is closed -/
 
-lemma max_prf_disj_self {Γ :  set form} {p r : form} : 
-  (max Γ r ⊢ᵢ r ∨ p) → ∃ n, p ∈ (insertn (maxn Γ r n) r (encodable.encode (r ∨ p)+1)) :=
+lemma prime_prf_disj_self {Γ :  set form} {p r : form} : 
+  (prime Γ r ⊢ᵢ r ∨ p) → ∃ n, p ∈ (insertn (primen Γ r n) r (encodable.encode (r ∨ p)+1)) :=
 begin
   intros h,
-  cases maxn_sub_prf h with n hpq,
+  cases primen_sub_prf h with n hpq,
   constructor,
     unfold insertn insert_code,
     rw (encodable.encodek ((r ∨ p))),
@@ -259,11 +259,11 @@ begin
       { left, refl } }
 end
 
-def max_is_closed {Γ :  set form} {p q r : form} : 
-  (max Γ r ⊢ᵢ p) → p ∈ max Γ r :=
-by { intros h, cases max_prf_disj_self (prf.or_intro2 r h), apply insertn_to_max, assumption' }
+def prime_is_closed {Γ :  set form} {p q r : form} : 
+  (prime Γ r ⊢ᵢ p) → p ∈ prime Γ r :=
+by { intros h, cases prime_prf_disj_self (prf.or_intro2 r h), apply insertn_to_prime, assumption' }
 
-/- max preserves consistency -/
+/- prime preserves consistency -/
 
 lemma insertn_prf {Γ :  set form} {p : form} {i} : 
   (insertn Γ p i ⊢ᵢ p) → (Γ ⊢ᵢ p) :=
@@ -288,41 +288,41 @@ end
 
 -- these two are better (positive)
 
-def maxn_not_prfn {Γ :  set form} {p : form} {n} : 
-  (maxn Γ p n ⊢ᵢ p) → (Γ ⊢ᵢ p) :=
+def primen_not_prfn {Γ :  set form} {p : form} {n} : 
+  (primen Γ p n ⊢ᵢ p) → (Γ ⊢ᵢ p) :=
 begin
   induction n with k ih,
     simp,
 
-    unfold maxn,
+    unfold primen,
     intro h,
-    cases prf_maxn_prf_insertn h,
+    cases prf_primen_prf_insertn h,
     apply ih, apply insertn_prf h_1
 end
 
-def max_not_prf {Γ :  set form} {p : form} : 
-  (max Γ p ⊢ᵢ p) → (Γ ⊢ᵢ p) :=
+def prime_not_prf {Γ :  set form} {p : form} : 
+  (prime Γ p ⊢ᵢ p) → (Γ ⊢ᵢ p) :=
 begin
   intros hm,
-  cases maxn_sub_prf hm,
-  apply maxn_not_prfn h
+  cases primen_sub_prf hm,
+  apply primen_not_prfn h
 end
 
 -- Closure under derivability
 
 end  ctx
 
-lemma max_of_max {Γ :  set form} {r : form} : 
- ctx.is_max (ctx.max Γ r) :=
+lemma prime_of_prime {Γ :  set form} {r : form} : 
+ ctx.is_prime (ctx.prime Γ r) :=
 begin
   split,
-    intro, apply ctx.max_is_closed, assumption,
-    intros p q, apply ctx.max_has_disj
+    intro, apply ctx.prime_is_closed, assumption,
+    intros p q, apply ctx.prime_has_disj
 end
 
-lemma max_no_prf {Γ :  set form} {r : form} (h : Γ ⊬ᵢ r) : 
- ctx.max Γ r ⊬ᵢ r :=
-λ hm, h (ctx.max_not_prf hm)
+lemma prime_no_prf {Γ :  set form} {r : form} (h : Γ ⊬ᵢ r) : 
+ ctx.prime Γ r ⊬ᵢ r :=
+λ hm, h (ctx.prime_not_prf hm)
 
 /- the canonical model construction -/
 
@@ -332,7 +332,7 @@ namespace canonical
 
 def is_consist (Γ :  set form) := Γ ⊬ᵢ ⊥
 
-def domain : set (wrld) := {w | is_consist w ∧  ctx.is_max w}
+def domain : set (wrld) := {w | is_consist w ∧  ctx.is_prime w}
 
 -- accessibility
 
@@ -413,24 +413,24 @@ begin
   { intro Hw,
     cases (em _),
     { assumption },
-    { have hd : ctx.max (w ⸴ p) q ∈ domain :=
+    { have hd : ctx.prime (w ⸴ p) q ∈ domain :=
         begin
           split,
-          exact consist_of_not_prf (max_no_prf (prf.contradeduction h)),
-          apply max_of_max,
+          exact consist_of_not_prf (prime_no_prf (prf.contradeduction h)),
+          apply prime_of_prime,
         end,
       apply false.elim,
-      apply max_no_prf (prf.contradeduction h),
-      cases hq ( ctx.max (w ⸴ p) q) _,
+      apply prime_no_prf (prf.contradeduction h),
+      cases hq ( ctx.prime (w ⸴ p) q) _,
       apply mp,
       apply Hw _ hd,
       { exact H },
       intros p Hp,
-      apply ctx.subset_max_self,
+      apply ctx.subset_prime_self,
       { right, assumption },
-      { apply (hp (ctx.max (w ⸴ p) q) _).2,
+      { apply (hp (ctx.prime (w ⸴ p) q) _).2,
         { apply prf.ax,
-          apply ctx.subset_max_self,
+          apply ctx.subset_prime_self,
           left, simp },
         exact hd },
       exact hd } },
@@ -481,25 +481,25 @@ theorem completeness {Γ :  set form} {p : form} :
 begin
   apply (@not_imp_not (Γ ⊢ᵢ p) (Γ ⊨ᵢ p) (prop_decidable _)).1,
   intros nhp hp,
-  have hd: ctx.max Γ p ∈ domain :=
+  have hd: ctx.prime Γ p ∈ domain :=
     begin
       split,
       apply consist_of_not_prf,
-      exact max_no_prf nhp, 
-      apply (max_of_max)
+      exact prime_no_prf nhp, 
+      apply (prime_of_prime)
     end,
   apply absurd,
   fapply hp,
   { exact model },
-  { exact ctx.max Γ p },
+  { exact ctx.prime Γ p },
   { exact hd },
 
   { apply ctx_tt_to_subctx_tt,
     apply ctx_tt_of_prf hd,
-    apply ctx.subset_max_self },
+    apply ctx.subset_prime_self },
 
   { intro hpm,
-    apply max_no_prf nhp,
+    apply prime_no_prf nhp,
     exact (model_tt_iff_prf _ hd).1 hpm },
 end
 
