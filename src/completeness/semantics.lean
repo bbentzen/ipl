@@ -25,7 +25,7 @@ local attribute [instance] prop_decidable
 def forces_form (M : model) : form → wrld → Prop
 |  (#p)   := λ v, M.val p v
 | (bot) := λ v, false 
-| (p ⊃ q) := λ v, (∀ w ∈ M.W, v ∈ M.W → M.R v w → forces_form p w → forces_form q w)
+| (p ⊃ q) := λ v, ∀ w ∈ M.W, v ∈ M.W → M.R v w → forces_form p w → forces_form q w
 | (p & q) := λ v, forces_form p v ∧ forces_form q v
 | (p ∨ q) := λ v, forces_form p v ∨ forces_form q v
 
@@ -38,7 +38,7 @@ notation w `⊩` `{` M `} ` p := forces_form M p w
 def forces_ctx (M : model) (Γ : set form) : wrld → Prop :=
 λ w, ∀ p, p ∈ Γ → forces_form M p w
 
-notation w `⊩` `{` M `} ` p := forces_ctx M p w
+notation w `⊩` `{` M `} ` Γ := forces_ctx M Γ w
 
 def sem_csq (Γ : set form) (p : form) := 
 ∀ (M : model) (w ∈ M.W), (w ⊩{M} Γ) → (w ⊩{M} p)
