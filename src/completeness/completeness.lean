@@ -288,8 +288,8 @@ end
 
 -- these two are better (positive)
 
-def primen_not_prfn {Γ :  set form} {p : form} {n} : 
-  (primen Γ p n ⊢ᵢ p) → (Γ ⊢ᵢ p) :=
+def primen_not_prfn {Γ :  set form} {r : form} {n} : 
+  (primen Γ r n ⊢ᵢ r) → (Γ ⊢ᵢ r) :=
 begin
   induction n with k ih,
     simp,
@@ -300,8 +300,8 @@ begin
     apply ih, apply insertn_prf h_1
 end
 
-def prime_not_prf {Γ :  set form} {p : form} : 
-  (prime Γ p ⊢ᵢ p) → (Γ ⊢ᵢ p) :=
+def prime_not_prf {Γ :  set form} {r : form} : 
+  (prime Γ r ⊢ᵢ r) → (Γ ⊢ᵢ r) :=
 begin
   intros hm,
   cases primen_sub_prf hm,
@@ -373,7 +373,7 @@ begin
     exact vp1.2 }
 end
 
-def model : @model :=
+def M : model :=
 begin
   fapply model.mk,
     apply domain,
@@ -393,7 +393,7 @@ lemma consist_of_not_prf {Γ :  set form} {p : form} :
 /- truth is membership in the canonical model -/
 
 lemma model_tt_iff_prf {p : form} : 
-  ∀ (w ∈ domain), (w ⊩{model} p) ↔ (w ⊢ᵢ p) :=
+  ∀ (w ∈ domain), (w ⊩{M} p) ↔ (w ⊢ᵢ p) :=
 begin
   induction p with p p q hp hq p q hp hq p q hp hq,
   -- atom 
@@ -435,7 +435,7 @@ begin
         exact hd },
       exact hd } },
   { intro hpq,
-    intros v Hv Hw hwv hp2,
+    intros v Hv Hw hwv hpv,
     apply (hq v Hv).2,
     apply prf.mp,
     { apply prf.sub_weak, assumption, assumption },
@@ -471,7 +471,7 @@ begin
 end
 
 lemma ctx_tt_of_prf {Γ :  set form} (wm : Γ ∈ domain) : 
-  (Γ ⊩{model} Γ) :=
+  (Γ ⊩{M} Γ) :=
 by { intros p hp, apply (model_tt_iff_prf Γ wm).2, apply prf.ax, assumption }
 
 /- the completeness theorem -/
@@ -490,7 +490,7 @@ begin
     end,
   apply absurd,
   fapply hp,
-  { exact model },
+  { exact M },
   { exact ctx.prime Γ p },
   { exact hd },
 
