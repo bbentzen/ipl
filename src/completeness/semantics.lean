@@ -8,21 +8,21 @@ import ..default
 
 open form classical
 
-@[reducible] def wrld := set form
+--@[reducible] def wrld := set form
 
 /- Kripke models -/
 
-structure model := 
-  (W : set wrld)
-  (R : wrld → wrld → Prop) 
-  (val : ℕ → wrld → Prop)
+structure model (A : Type) := 
+  (W : set A)
+  (R : A → A → Prop) 
+  (val : ℕ → A → Prop)
   (refl : ∀ w ∈ W, R w w)
   (trans : ∀ w ∈ W, ∀ v ∈ W, ∀ u ∈ W, R w v → R v u → R w u)
   (mono : ∀ p, ∀ w1 w2 ∈ W, val p w1 → R w1 w2 →  val p w2)
 local attribute [instance] prop_decidable
 
 @[simp]
-def forces_form (M : model) : form → wrld → Prop
+def forces_form {A : Type} (M : model A) : form → A → Prop
 |  (#p)   := λ v, M.val p v
 | (bot) := λ v, false 
 | (p ⊃ q) := λ v, ∀ w ∈ M.W, v ∈ M.W → M.R v w → forces_form p w → forces_form q w
@@ -35,23 +35,23 @@ notation w `⊩` `{` M `} ` p := forces_form M p w
 
 /- Local logical consequence -/
 
-def forces_ctx (M : model) (Γ : set form) : wrld → Prop :=
+def forces_ctx {A : Type} (M : model A) (Γ : set form) : A → Prop :=
 λ w, ∀ p, p ∈ Γ → forces_form M p w
 
 notation w `⊩` `{` M `} ` Γ := forces_ctx M Γ w
 
 def sem_csq (Γ : set form) (p : form) := 
-∀ (M : model) (w ∈ M.W), (w ⊩{M} Γ) → (w ⊩{M} p)
+∀ {A : Type} (M : model A) (w ∈ M.W), (w ⊩{M} Γ) → (w ⊩{M} p)
 
 notation Γ ` ⊨ᵢ ` p := sem_csq Γ p
 
 /- a helpful lemma -/
 
-lemma ctx_tt_to_subctx_tt {Γ Δ : set form} {M : model} {w : wrld} : 
+lemma ctx_tt_to_subctx_tt {A : Type} {Γ Δ : set form} {M : model A} {w : A} : 
   (w ⊩{M} Γ) → Δ ⊆ Γ → (w ⊩{M} Δ) :=
 by { intros h s p pmem, apply h, apply s, assumption}
 
-lemma mono_r {M : model}: 
+lemma mono_r {A : Type} {M : model A}: 
 ∀ p : form, ∀ w1 w2 ∈ M.W, (w1 ⊩ { M } p) → M.R w1 w2 →  (w2 ⊩ { M } p):=
 begin
 intro p,

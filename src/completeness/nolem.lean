@@ -12,12 +12,12 @@ open form
 
 namespace no_lem
 
-def W : set (wrld) := {{atom 0}, {atom 1}}
+def W : set bool := {ff, tt}
 
-def R : wrld → wrld → Prop :=  --- w0 sees w1 
-λ w v, w = v ∨ w = {atom 0} 
+def R : bool → bool → Prop :=  --- w0 sees w1 
+λ w v, w = v ∨ w = ff 
 
-lemma Rrefl : ∀ w : wrld, w ∈ W → R w w :=
+lemma Rrefl : ∀ w : bool, w ∈ W → R w w :=
 begin
   intros w h, unfold R,
   left, refl
@@ -35,8 +35,8 @@ begin
 end
 
 @[simp]
-def val : nat → wrld → Prop :=
-λ _ w, w = {atom 1}
+def val : nat → bool → Prop :=
+λ _ w, w = tt
 
 def atom0_ne_atom1 : #0 ≠ #1 :=
 λ h, (@form.no_confusion false #0 #1 h) zero_ne_one
@@ -48,13 +48,12 @@ begin
     { rw r12.symm,
       assumption },
     { apply false.elim,
-      apply atom0_ne_atom1,
-      apply set.singleton_eq_singleton_iff.1,
+      apply bool.ff_ne_tt,
       rw r12.symm,
       assumption },  
 end
 
-def M : model :=
+def M : model bool :=
 begin
   fapply model.mk,
   exact W,
@@ -66,7 +65,7 @@ begin
 end
 
 lemma M_lem : 
-  ¬ ({#0} ⊩{M} (#0 ∨ ~#0)) :=
+  ¬ (ff ⊩{M} (#0 ∨ ~#0)) :=
 begin
   intro h, 
   cases h,
@@ -74,7 +73,7 @@ begin
       unfold M,
       simp },
     { fapply h,
-      exact {#1},
+      exact tt,
       left, refl,
       right, simp,
       right, refl,

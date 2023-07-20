@@ -332,16 +332,16 @@ namespace canonical
 
 def is_consist (Γ :  set form) := Γ ⊬ᵢ ⊥
 
-def domain : set (wrld) := {w | is_consist w ∧  ctx.is_prime w}
+def domain : set (set form) := {w | is_consist w ∧  ctx.is_prime w}
 
 -- accessibility
 
-def access : wrld → wrld → Prop :=
+def access : set form → set form → Prop :=
 λ w v, w ⊆ v
 
 -- valuation
 
-def val : ℕ → wrld → Prop :=
+def val : ℕ → set form → Prop :=
 λ q w, w ∈ domain ∧ (#q) ∈ w
 
 -- reflexivity
@@ -373,7 +373,7 @@ begin
     exact vp1.2 }
 end
 
-def M : model :=
+def M : model (set form) :=
 begin
   fapply model.mk,
     apply domain,
